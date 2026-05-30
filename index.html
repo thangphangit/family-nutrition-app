@@ -33,6 +33,17 @@
           Mục tiêu calo/ngày
           <input id="memberGoal" type="number" min="500" step="50" placeholder="1800" required>
         </label>
+        <label class="wide">
+          Sở thích ăn uống
+          <select id="memberPreference">
+            <option value="balanced">Cân bằng</option>
+            <option value="vietnamese">Món Việt</option>
+            <option value="high-protein">Giàu protein</option>
+            <option value="light">Ít calo</option>
+            <option value="vegetarian">Chay</option>
+            <option value="kid-friendly">Dễ ăn cho trẻ</option>
+          </select>
+        </label>
         <button type="submit">Thêm thành viên</button>
       </form>
       <div id="memberList" class="member-list"></div>
@@ -83,6 +94,27 @@
         </label>
         <button type="submit" class="wide">Lưu bữa ăn</button>
       </form>
+    </section>
+
+    <section class="panel suggestion-panel">
+      <div class="section-title">
+        <h2>Gợi ý thực đơn</h2>
+        <span id="suggestionMemberName"></span>
+      </div>
+      <div class="suggestion-controls">
+        <label>
+          Bữa cần gợi ý
+          <select id="suggestionMealType">
+            <option>Sáng</option>
+            <option>Trưa</option>
+            <option>Tối</option>
+            <option>Phụ</option>
+          </select>
+        </label>
+        <button id="generateSuggestion" type="button">Gợi ý món phù hợp</button>
+      </div>
+      <div id="calorieAdvice" class="advice-box"></div>
+      <div id="suggestionList" class="suggestion-list"></div>
     </section>
 
     <section class="panel summary-panel">

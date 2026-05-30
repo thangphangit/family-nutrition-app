@@ -178,6 +178,62 @@ button:hover {
   font-size: 13px;
 }
 
+.suggestion-controls {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto;
+  gap: 14px;
+  align-items: end;
+}
+
+.advice-box {
+  margin-top: 16px;
+  padding: 13px 14px;
+  color: #315243;
+  background: var(--green-soft);
+  border: 1px solid #b9e3d4;
+  border-radius: 8px;
+  line-height: 1.5;
+}
+
+.suggestion-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.suggestion-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  background: #fffdf8;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.suggestion-card strong,
+.suggestion-card small,
+.suggestion-card span {
+  display: block;
+}
+
+.suggestion-card small {
+  margin-top: 4px;
+  color: var(--muted);
+}
+
+.suggestion-card span {
+  margin-top: 8px;
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.suggestion-card button {
+  white-space: nowrap;
+}
+
 .form-grid,
 .meal-form {
   display: grid;
@@ -309,7 +365,9 @@ canvas {
 
   .form-grid,
   .meal-form,
-  .nutrition-grid {
+  .nutrition-grid,
+  .suggestion-controls,
+  .suggestion-card {
     grid-template-columns: 1fr;
   }
 

@@ -1,10 +1,38 @@
 const STORAGE_KEY = "familyNutritionApp";
 
+const preferenceLabels = {
+  balanced: "Cân bằng",
+  vietnamese: "Món Việt",
+  "high-protein": "Giàu protein",
+  light: "Ít calo",
+  vegetarian: "Chay",
+  "kid-friendly": "Dễ ăn cho trẻ"
+};
+
+const foodCatalog = [
+  { name: "Yến mạch chuối và sữa chua", meal: "Sáng", calories: 360, protein: 18, carbs: 52, fat: 8, tags: ["balanced", "light", "kid-friendly"] },
+  { name: "Bánh mì trứng ốp la và rau", meal: "Sáng", calories: 420, protein: 20, carbs: 45, fat: 16, tags: ["balanced", "vietnamese"] },
+  { name: "Phở gà ít béo", meal: "Sáng", calories: 480, protein: 32, carbs: 58, fat: 10, tags: ["vietnamese", "high-protein"] },
+  { name: "Sinh tố bơ chuối protein", meal: "Sáng", calories: 430, protein: 28, carbs: 40, fat: 17, tags: ["high-protein", "kid-friendly"] },
+  { name: "Cơm gà áp chảo và rau luộc", meal: "Trưa", calories: 620, protein: 42, carbs: 68, fat: 18, tags: ["balanced", "vietnamese", "high-protein"] },
+  { name: "Bún thịt nướng nhiều rau", meal: "Trưa", calories: 560, protein: 30, carbs: 72, fat: 16, tags: ["vietnamese", "balanced"] },
+  { name: "Đậu hũ sốt cà chua với cơm gạo lứt", meal: "Trưa", calories: 510, protein: 24, carbs: 70, fat: 14, tags: ["vegetarian", "balanced", "vietnamese"] },
+  { name: "Salad cá ngừ khoai lang", meal: "Trưa", calories: 470, protein: 38, carbs: 42, fat: 14, tags: ["high-protein", "light"] },
+  { name: "Cá hồi áp chảo, cơm và bông cải", meal: "Tối", calories: 590, protein: 40, carbs: 52, fat: 24, tags: ["balanced", "high-protein"] },
+  { name: "Canh rau, trứng hấp và cơm nhỏ", meal: "Tối", calories: 430, protein: 24, carbs: 46, fat: 14, tags: ["vietnamese", "light", "kid-friendly"] },
+  { name: "Miến gà rau nấm", meal: "Tối", calories: 450, protein: 32, carbs: 50, fat: 10, tags: ["vietnamese", "light", "high-protein"] },
+  { name: "Cơm chay nấm, đậu hũ và rau xanh", meal: "Tối", calories: 520, protein: 26, carbs: 66, fat: 16, tags: ["vegetarian", "balanced"] },
+  { name: "Sữa chua Hy Lạp và hạt", meal: "Phụ", calories: 220, protein: 18, carbs: 18, fat: 9, tags: ["high-protein", "light"] },
+  { name: "Trái cây và sữa tươi", meal: "Phụ", calories: 180, protein: 7, carbs: 28, fat: 4, tags: ["light", "kid-friendly"] },
+  { name: "Bắp luộc và trứng", meal: "Phụ", calories: 260, protein: 14, carbs: 34, fat: 8, tags: ["vietnamese", "balanced"] },
+  { name: "Đậu nành và chuối", meal: "Phụ", calories: 240, protein: 13, carbs: 35, fat: 5, tags: ["vegetarian", "kid-friendly"] }
+];
+
 const defaultData = {
   members: [
-    { id: createId(), name: "Bố Minh", goal: 2200 },
-    { id: createId(), name: "Mẹ Lan", goal: 1800 },
-    { id: createId(), name: "Bé An", goal: 1400 }
+    { id: createId(), name: "Bố Minh", goal: 2200, preference: "high-protein" },
+    { id: createId(), name: "Mẹ Lan", goal: 1800, preference: "light" },
+    { id: createId(), name: "Bé An", goal: 1400, preference: "kid-friendly" }
   ],
   meals: []
 };
@@ -16,6 +44,7 @@ const els = {
   memberForm: document.querySelector("#memberForm"),
   memberName: document.querySelector("#memberName"),
   memberGoal: document.querySelector("#memberGoal"),
+  memberPreference: document.querySelector("#memberPreference"),
   memberCount: document.querySelector("#memberCount"),
   memberList: document.querySelector("#memberList"),
   mealForm: document.querySelector("#mealForm"),
@@ -36,6 +65,11 @@ const els = {
   calorieProgress: document.querySelector("#calorieProgress"),
   mealList: document.querySelector("#mealList"),
   clearMeals: document.querySelector("#clearMeals"),
+  suggestionMemberName: document.querySelector("#suggestionMemberName"),
+  suggestionMealType: document.querySelector("#suggestionMealType"),
+  generateSuggestion: document.querySelector("#generateSuggestion"),
+  calorieAdvice: document.querySelector("#calorieAdvice"),
+  suggestionList: document.querySelector("#suggestionList"),
   chartMemberName: document.querySelector("#chartMemberName"),
   weeklyChart: document.querySelector("#weeklyChart")
 };
@@ -55,9 +89,10 @@ els.memberForm.addEventListener("submit", (event) => {
 
   const name = els.memberName.value.trim();
   const goal = Number(els.memberGoal.value);
+  const preference = els.memberPreference.value;
   if (!name || !goal) return;
 
-  data.members.push({ id: createId(), name, goal });
+  data.members.push({ id: createId(), name, goal, preference });
   els.memberForm.reset();
   saveAndRender();
 });
@@ -85,6 +120,8 @@ els.mealForm.addEventListener("submit", (event) => {
 });
 
 els.summaryMember.addEventListener("change", renderSummary);
+els.suggestionMealType.addEventListener("change", renderSuggestions);
+els.generateSuggestion.addEventListener("click", renderSuggestions);
 els.clearMeals.addEventListener("click", () => {
   if (!data.meals.length) return;
   data.meals = [];
@@ -98,12 +135,21 @@ function loadData() {
   try {
     const parsed = JSON.parse(saved);
     return {
-      members: Array.isArray(parsed.members) ? parsed.members : defaultData.members,
+      members: Array.isArray(parsed.members) ? parsed.members.map(normalizeMember) : defaultData.members,
       meals: Array.isArray(parsed.meals) ? parsed.meals : []
     };
   } catch {
     return defaultData;
   }
+}
+
+function normalizeMember(member) {
+  return {
+    id: member.id || createId(),
+    name: member.name || "Thành viên",
+    goal: Number(member.goal) || 1800,
+    preference: preferenceLabels[member.preference] ? member.preference : "balanced"
+  };
 }
 
 function saveAndRender() {
@@ -129,7 +175,7 @@ function renderMembers() {
     <article class="member-card">
       <div>
         <strong>${escapeHtml(member.name)}</strong>
-        <small>Mục tiêu ${member.goal.toLocaleString("vi-VN")} kcal/ngày</small>
+        <small>Mục tiêu ${member.goal.toLocaleString("vi-VN")} kcal/ngày · ${preferenceLabels[member.preference]}</small>
       </div>
       <button class="delete-btn" type="button" aria-label="Xóa ${escapeHtml(member.name)}" data-delete-member="${member.id}">x</button>
     </article>
@@ -171,6 +217,7 @@ function renderSummary() {
   if (!member) {
     setTotals({ calories: 0, protein: 0, carbs: 0, fat: 0 }, 0);
     els.mealList.innerHTML = `<div class="empty-state">Thêm thành viên để bắt đầu ghi bữa ăn.</div>`;
+    renderSuggestions();
     drawWeeklyChart(null);
     return;
   }
@@ -179,6 +226,7 @@ function renderSummary() {
   const totals = sumMeals(dailyMeals);
   setTotals(totals, member.goal);
   renderMeals(member, dailyMeals);
+  renderSuggestions();
   drawWeeklyChart(member);
 }
 
@@ -214,6 +262,89 @@ function renderMeals(member, meals) {
       saveAndRender();
     });
   });
+}
+
+function renderSuggestions() {
+  const member = data.members.find((item) => item.id === els.summaryMember.value);
+
+  if (!member) {
+    els.suggestionMemberName.textContent = "";
+    els.calorieAdvice.textContent = "Thêm thành viên để nhận gợi ý thực đơn.";
+    els.suggestionList.innerHTML = "";
+    els.generateSuggestion.disabled = true;
+    return;
+  }
+
+  els.generateSuggestion.disabled = false;
+  els.suggestionMemberName.textContent = `${member.name} · ${preferenceLabels[member.preference]}`;
+
+  const dailyMeals = data.meals.filter((meal) => meal.memberId === member.id && meal.date === todayIso);
+  const totals = sumMeals(dailyMeals);
+  const remaining = Math.max(member.goal - totals.calories, 0);
+  const mealType = els.suggestionMealType.value;
+  const mealBudget = getMealBudget(remaining, mealType, member.goal);
+  const suggestions = getSuggestions(member, mealType, mealBudget);
+
+  els.calorieAdvice.innerHTML = `
+    Đã dùng <strong>${Math.round(totals.calories).toLocaleString("vi-VN")} kcal</strong>,
+    còn khoảng <strong>${Math.round(remaining).toLocaleString("vi-VN")} kcal</strong>.
+    Gợi ý cho bữa ${escapeHtml(mealType.toLowerCase())}: khoảng <strong>${Math.round(mealBudget).toLocaleString("vi-VN")} kcal</strong>.
+  `;
+
+  if (!suggestions.length) {
+    els.suggestionList.innerHTML = `<div class="empty-state">Chưa tìm thấy món phù hợp. Thử đổi loại bữa hoặc tăng mục tiêu calo.</div>`;
+    return;
+  }
+
+  els.suggestionList.innerHTML = suggestions.map((food, index) => `
+    <article class="suggestion-card">
+      <div>
+        <strong>${escapeHtml(food.name)}</strong>
+        <small>${food.calories} kcal · P ${food.protein}g · C ${food.carbs}g · F ${food.fat}g</small>
+        <span>${food.tags.map((tag) => preferenceLabels[tag]).filter(Boolean).join(" · ")}</span>
+      </div>
+      <button type="button" data-use-suggestion="${index}">Dùng món này</button>
+    </article>
+  `).join("");
+
+  document.querySelectorAll("[data-use-suggestion]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const food = suggestions[Number(button.dataset.useSuggestion)];
+      fillMealForm(member, mealType, food);
+    });
+  });
+}
+
+function getMealBudget(remaining, mealType, goal) {
+  const mealRatios = { "Sáng": 0.25, "Trưa": 0.35, "Tối": 0.3, "Phụ": 0.1 };
+  const defaultBudget = goal * (mealRatios[mealType] || 0.25);
+  if (remaining <= 0) return Math.min(defaultBudget, 220);
+  return Math.min(defaultBudget, remaining);
+}
+
+function getSuggestions(member, mealType, budget) {
+  return foodCatalog
+    .filter((food) => food.meal === mealType)
+    .map((food) => ({
+      ...food,
+      score: Math.abs(food.calories - budget)
+        - (food.tags.includes(member.preference) ? 160 : 0)
+        - (food.tags.includes("balanced") ? 30 : 0)
+    }))
+    .sort((a, b) => a.score - b.score)
+    .slice(0, 3);
+}
+
+function fillMealForm(member, mealType, food) {
+  els.mealMember.value = member.id;
+  els.mealDate.value = todayIso;
+  els.mealType.value = mealType;
+  els.foodName.value = food.name;
+  els.calories.value = food.calories;
+  els.protein.value = food.protein;
+  els.carbs.value = food.carbs;
+  els.fat.value = food.fat;
+  els.foodName.focus();
 }
 
 function drawWeeklyChart(member) {
