@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý dinh dưỡng gia đình</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <p class="eyebrow">Gia đình khỏe mạnh</p>
+      <h1>Quản lý dinh dưỡng</h1>
+    </div>
+    <div class="today-card">
+      <span>Hôm nay</span>
+      <strong id="todayLabel"></strong>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel member-panel">
+      <div class="section-title">
+        <h2>Thành viên</h2>
+        <span id="memberCount">0 người</span>
+      </div>
+      <form id="memberForm" class="form-grid">
+        <label>
+          Tên
+          <input id="memberName" type="text" placeholder="Ví dụ: Mẹ Lan" required>
+        </label>
+        <label>
+          Mục tiêu calo/ngày
+          <input id="memberGoal" type="number" min="500" step="50" placeholder="1800" required>
+        </label>
+        <button type="submit">Thêm thành viên</button>
+      </form>
+      <div id="memberList" class="member-list"></div>
+    </section>
+
+    <section class="panel meal-panel">
+      <div class="section-title">
+        <h2>Nhập bữa ăn</h2>
+        <span>Theo từng người</span>
+      </div>
+      <form id="mealForm" class="meal-form">
+        <label>
+          Thành viên
+          <select id="mealMember" required></select>
+        </label>
+        <label>
+          Ngày
+          <input id="mealDate" type="date" required>
+        </label>
+        <label>
+          Bữa
+          <select id="mealType" required>
+            <option>Sáng</option>
+            <option>Trưa</option>
+            <option>Tối</option>
+            <option>Phụ</option>
+          </select>
+        </label>
+        <label class="wide">
+          Món ăn
+          <input id="foodName" type="text" placeholder="Cơm gà, sữa chua, salad..." required>
+        </label>
+        <label>
+          Calo
+          <input id="calories" type="number" min="0" step="1" placeholder="450" required>
+        </label>
+        <label>
+          Protein (g)
+          <input id="protein" type="number" min="0" step="0.1" placeholder="25">
+        </label>
+        <label>
+          Carb (g)
+          <input id="carbs" type="number" min="0" step="0.1" placeholder="55">
+        </label>
+        <label>
+          Fat (g)
+          <input id="fat" type="number" min="0" step="0.1" placeholder="12">
+        </label>
+        <button type="submit" class="wide">Lưu bữa ăn</button>
+      </form>
+    </section>
+
+    <section class="panel summary-panel">
+      <div class="section-title">
+        <h2>Tổng hôm nay</h2>
+        <select id="summaryMember"></select>
+      </div>
+      <div class="nutrition-grid">
+        <div class="metric">
+          <span>Calo</span>
+          <strong id="totalCalories">0</strong>
+          <small id="goalProgress">0% mục tiêu</small>
+        </div>
+        <div class="metric">
+          <span>Protein</span>
+          <strong id="totalProtein">0g</strong>
+        </div>
+        <div class="metric">
+          <span>Carb</span>
+          <strong id="totalCarbs">0g</strong>
+        </div>
+        <div class="metric">
+          <span>Fat</span>
+          <strong id="totalFat">0g</strong>
+        </div>
+      </div>
+      <div class="progress-track">
+        <div id="calorieProgress" class="progress-fill"></div>
+      </div>
+      <div class="section-title compact">
+        <h3>Bữa đã nhập</h3>
+        <button id="clearMeals" type="button">Xóa dữ liệu bữa ăn</button>
+      </div>
+      <div id="mealList" class="meal-list"></div>
+    </section>
+
+    <section class="panel chart-panel">
+      <div class="section-title">
+        <h2>Biểu đồ calo tuần</h2>
+        <span id="chartMemberName"></span>
+      </div>
+      <canvas id="weeklyChart" width="760" height="320"></canvas>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
